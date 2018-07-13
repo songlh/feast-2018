@@ -1,0 +1,17 @@
+To generate protocol dialect without jeopardizing protocol validity, we propose a message partition mechanism, which separates the content carried by one message into two individual ones. From the technical perspective, we first
+
+
+Intuition suggests, by separating the content carried by one message and encapusulate them into two individual ones, we can increase the amount of the messages exchanged between parties and vary a protocol dialect without jeopardizing protocol validity. As a result, our first proposed approach is to generate a protocol dialect by performing message partition. As is shown in Figure~\ref{}, when receiving a message, a state machine typically carries out a state transition, in the process of which it examines if the message received matches the transition condition (\ie a set of constaints). To perform a message partition, we will first introduce an additional state and insert it in between the two states connected through that transition condition. Then, we partition that condition into two individual ones. The criteria of this condition partitition is to ensure the conjunction of two conditions is equivalent to the orginal condition. Take the condition shown in Figure~\ref{}, the two conditions newly apart are C1\&C3 and C2, the conjunction of which is C1\&C2\&C3 <==> C.    
+
+% why we use condition partition to achieve message partition
+
+We will attach new conditions to the edges connected to the addition state, and construct a new state machine.  By using the technique introduce in Seciton~\ref{}, we will then trace back to the function call and the code fragment pertaining to the message received. Since the new condition is a relaxation of the original one, we will perform a code adjustment and ensure the newly adjusted code fragment only hold the condition newly generated but not the orginal one. In this way, we vary the message received  
+
+a state transition is typically triggered when a state machine receives a message (\eg, ...). In this process, the state machine examines if the message received matches a set of condition
+
+
+
+
+
+
+such messages are sent out when a state transition occurs, a state machine typically sends out a message to trigger a state transition on the other end. In this process, the message receiver examines if the message     

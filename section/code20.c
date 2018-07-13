@@ -1,0 +1,8 @@
+typedef enum {
+    WORK_ERROR,
+    WORK_FINISHED_STOP,
+    WORK_FINISHED_CONTINUE,
+    WORK_MORE_A,
+    WORK_MORE_B,
+    WORK_MORE_C
+} WORK_STATE;

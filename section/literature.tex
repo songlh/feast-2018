@@ -1,0 +1,29 @@
+\section{Related Work}
+\label{sec:literature}
+
+As we mentioned above, the proposed research includes the extraction of state
+machines as well as protocol dialect generation. To the best of our knowledge,
+there is no previous research that focuses on protocol dialect generation. As a
+result, the research most related to our own is protocol reverse engineering, in
+which one line of work lies in recovering state machines from target protocols.
+In this section, we briefly summarize these previous research works and discuss
+the their limitations. It should be noticed that we do not include those
+protocol reverse engineering works that focus only on packet format recovery
+(\eg,~\citep{AutoFormat, Polyglot, Dispatcher, ucsb-packet, wangzhi, Junghee,
+Junghee2,Junghee3,Discoverer,Tupni}).
+
+Cho et al. proposed two technical approaches to infer state machines from a
+target protocol. In~\citep{botnet-inference}, they utilized parallelization  and
+caching to improve \texttt{L*} algorithm~\citep{L1, L2} and then used it to
+perform state machine  extraction. In~\citep{MACE}, they inferred finite state
+machines using concolic execution~\citep{dart,cute}  along with \texttt{L*}
+algorithm. In~\citep{Prospex}, Comparetti et al introduced \texttt{Prospex} to
+extract state machine. Technically, they are similar to the works proposed
+in~\citep{botnet-inference, MACE}, which restores message format using machine
+learning and then infer state machines using \texttt{L*}. While the techniques
+above all demonstrated the capability of extracting state machines from a
+protocol, they cannot be adopted in our research work. In the context of dialect
+generation, we need to associate the state machine with the code fragments
+indicating their implementation. However, the previous works all treat a target
+protocol as a blackbox. Thus, they all lack the ability to provide guidance for
+pinpointing the state machine implementation.

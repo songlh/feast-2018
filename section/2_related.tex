@@ -1,0 +1,117 @@
+\section{Related Works}
+\label{sec:related}
+
+There are two goals to reverse engineer a protocol, 
+one is to identify formats of packets exchanged through the protocol, 
+and the other is to extract state machines which maintain valid sessions of the protocol. 
+Existing techniques can be categorized, based on their different goals. 
+
+
+
+\subsection{Packet Format Extraction}
+
+To extract packet formats, 
+techniques can be built based on dynamic taint analysis~\citep{AutoFormat,Polyglot,Dispatcher,ucsb-packet,wangzhi}, 
+static analysis~\citep{Junghee} or analyzing network traces~\citep{Discoverer}. 
+
+%{\textbf{\underline{Dynamic Analysis}}
+{\underline{\textit{Dynamic techniques}}}
+first generate execution traces using taint analysis~\citep{dawn-taint,taint1,taint-sosp,taint-micro}, 
+which will mark data received from network with taint information 
+and propagate this information to any instruction that operates on tainted data.
+Dynamic techniques then analyze the execution traces to figure out packet formats. 
+The intuition behind these techniques is that how protocol implementations 
+process received packets indicates packet formats. 
+
+Polyglot~\citep{Polyglot} models received packets in a flat structure, 
+and identifies length fields, pointer fields, field separators, 
+and protocol keywords through heuristics. 
+~\citet{ucsb-packet} consider a untainted value as a potential delimiter, 
+when the untainted value is compared with a tainted input byte, 
+and label the input byte with the delimiter.
+After that, a received packet will be splitted into nested intervals by delimiters, 
+which represents nested fields. 
+AutoFormat~\citep{AutoFormat} hierarchically identify packet fields based 
+on their access contexts, such as call stacks or the addresses of instructions. 
+There are many library calls and instructions whose arguments or outputs contain network semantic information, 
+such as IP addresses, port numbers and timestamp.
+Dispatcher~\citep{Dispatcher} leverages these system calls and 
+instructions to attribute semantic information to each identified packet field. 
+Dispatcher also tries to figure out fields of output packets. 
+Dispatcher models an output packet as a buffer, 
+which is recursively constructed from other small buffers. 
+Each small buffer represents a packet field. 
+
+{\underline{\textit{Static techniques}}} 
+apply control flow and data flow analysis to infer output file or packet formats. 
+FFS/x86 (File-Format Extractor for x86) uses hierarchical finite state machine (HFSM)~\citep{HFSM1, HFSM2} 
+to represent output data format~\citep{Junghee,Junghee2}.
+One node in HFSM represents an output library call or a callsite to a sub-FSM. 
+After generating initial HFSM, 
+FFS/x86 annotates each node with possible values to be written out 
+and the size of the data the node represents. 
+In the end, FFS/x86 simplifies HFSM by merging nodes annotated with uncertain values or sizes.
+Although the idea of FFS/x86 is general, the implementation is tied to x86 instruction set. 
+In their following works, TSL system~\citep{Junghee3} 
+is designed to generate analyzers targeting different instruction sets. 
+
+
+{\underline{\textit{Network trace analysis techniques}}}  
+infer formats based on multiple collected packets. 
+Discoverer~\citep{Discoverer} first breaks each packet into text tokens and binary tokens, 
+and conduct initial clustering for all packets.
+Tokens represent potential packet fields.
+Then, Discoverer recursively splits each cluster based on 
+identified format distinguisher (FD) tokens.  
+FD token is a type of fields, 
+which can be used to differentiate formats of subsequent parts. 
+Finally, Discoverer will merge similar clusters to eliminate cases, 
+where packets of the same format are classified into different clusters. 
+Tupni~\citep{Tupni} combines dynamic taint analysis and trace analysis. 
+After generating packet format for every packet, 
+Tupni will merge all packet formats to drive a more complete specification. 
+
+Although techniques to extract packet formats are useful in guiding black-box fuzzing, 
+deep packet inspection and packet rewriting, 
+they do not identify protocols’ state machines and cannot provide any guidance 
+in protocol subsetting and dialect generation. 
+
+
+\subsection{Protocol State Machine Extraction}
+
+Existing techniques~\citep{botnet-inference,MACE,Prospex} extract state machines through analyzing network traffics in two steps.
+First, these techniques apply an abstract function to change concrete packets into a set of abstract messages.
+Second, L* algorithm~\citep{L1,L2}  is applied on network traffics represented by abstract messages to generate state machines.   
+
+L* is an online algorithm~\citep{L1,L2} to infer a finite state machine 
+based on queries to the finite state machine and its responses. 
+L* assumes the finite state machine to be inferred will answer queries in a deterministic way. 
+It also assumes that there is an oracle which will tell whether the current learned state machine is equivalent to the real one.
+If not, the oracle will generate a counterexample, which L* can use to continue the inference process. 
+The complexity of L* is polynomial in the number of states and the size of input alphabet. 
+
+
+~\citet{botnet-inference} design several optimizations when applying L* algorithm, 
+such as parallelization and caching, and also demonstrate that 
+inferred state machines can be used as a formal basis to study and defeat botnet
+such as identifying the weakest link in a botnet protocol and proving the existence 
+of communication channels between botnet masters.  
+MACE~\citep{MACE} incrementally infers state machines by combining 
+L* algorithm and concolic exploration~\citep{dart,cute}. 
+In each iteration, MACE use a sequence of input packets to make the monitored protocol 
+implementation get to a known state, and then use concolic execution to explore new states.  
+Compared with concolic execution, MACE is less likely to be stuck in local state sub-spaces. 
+Prospex~\citep{Prospex} starts state machine inference from clustering packets, 
+based on packet field similarity, execution similarity and output similarity. 
+Then, Prospex leverage an abstract function to assign a type to each cluster. 
+A session can be represented as a sequence of packet types. 
+L* algorithm is applied to infer a state machine which can take the sequence as input. 
+
+Although these techniques are useful, 
+they largely treat analyzed protocol implementation as a black box, 
+and their identified protocol states and message types 
+do not correspond to specific codes in the protocol implementation.
+Therefore, extracted state machines cannot provide any guidance for protocol subsetting and dialect generation. 
+Since all these techniques are based on collected network traces, 
+which may not cover all protocol states, 
+they cannot guarantee inferred state machines are complete. 

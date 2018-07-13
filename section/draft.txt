@@ -1,0 +1,128 @@
+There are two major challenges
+(1) how to generate dialect without introducing incorrectness or in other words using what approaches and following what steps we can modify a dialect without harming its correctness and reliability 
+(2) dialect involves two communication parties. when customize a dialects, going beyond guaranteeing correctness, we must change code on both sides. due to the complexity of protocol implementation, the challenge is how to ensure consistency of code variation.
+
+
+
+Dialect generation needs to take as input a protocol implementation, and generate
+various dialects. To achieve
+this, we have to address two major challenges below.
+
+\noindent{\textbf{Correctness.}} 
+To generate a new dialect, our intuition suggests there are many possible approaches that can mutate a protocol dialect. However, it is not difficult to imagine that many of them may not guarantee the reliability of the dialect newly generated. As a result, the first challenge of dialect generation is to identify a set of dialect modification strategies that can diversify protocol dialects but not introduce incorrectness. 
+
+Recall that the goal of this research project is
+to reduce the attack surface by introducing various protocol dialects. It is not
+difficult to note that the diversity of dialects can increase the difficulty for
+attackers in restoring the protocol used by end users. As a result, the first challenge of dialect generation is to identify a set of mutation primitives, allowing us to diversify the dialects newly generated.
+
+\noindent{\textbf{Consistency.}} A communication protocol typically involves
+more than one parties exchanging messages between each other. Typically, the
+implementation pertaining to such protocols might be separated into different
+code bases. When performing protocol dialect generation, we must modify protocol implementation across different code bases. Considering the complicated control flow and data dependency, the second challenge of dialect generation is to develop a generic approach to handle the consistency of code variation.
+
+
+In this section, we conduct a manual exploratory study and aim to use this exploration to identify approaches capable of generating new and more importantly correct protocol dialects. Since a protocol dialect typically relies upon finite state machines, this manual study focuses on exploring how to generate new correct dialects by varying state machines. To be more specific, we explore two different variation strategies -- varying transition conditions and states. In the following session, we will describe and discuss them in turn by taking OpenVPN and OpenSSL for example. 
+
+We manually explore three approaches to varying transition conditions, and observe the variations in protocol dialects.  
+
+We also investigate dialect variation by manually changing the states of a target finite state machine. To be specific, we investigated OpenVPN and modified states through the following two practices. 
+
+First, we introduce additional states to increase the amount of messages exchanged between communication parties. Figure~\ref{} illustrates a protocol dialect of OpenVPN as well as the states involved in this dialect. As is showed in the figure, the first three messages indicate a three-way handshake. Our first practice of varying this dialect is to introduce two additional states and change the protocol to a five-way handshake dialect. 
+
+To be more specific, we first insert additional states \Code{EXTRA_CLIENT} and \Code{EXTRA_SERVER} into the state transitions as demonstrated in Figure~\ref{}. Then, we manually extend the protocol implementation to complete additional message exchange indicated in red in Figure~\ref{}. To ensure the additional message handshakes do not incur protocol failure, we also modify the condition of triggering message exchange timeout. Through this manual investigation and code modification, we observe the messages introduced by this practice do not have negative impacts upon the protocol dialect. In this project, we therefore plan to take this practice as the third strategy for dialect generation. 
+
+
+still guarantees the correctness of protocol to duplicant message exchange is a practical strategy for dialect generation.  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+As part of our preliminary exploration, we also investigate dialect variation by manually changing the transition states pertaining to a state machine extracted from protocol implementation. To be specific, our first practice is to introduce additional states so that we can increase the amount of messages exchanged between communication parties. Figure~\ref{} illustrates this practice using dialect defined in OpenVPN, where we insert additional states \Code{EXTRA_CLIENT} and \Code{EXTRA_SERVER} into the state transitions, and extend the three-way handshake dialect to a five-way handshake. From the perspective of protocol implementation, we extend the code to complete additional message exchange indicated in red in Figure~\ref{}. In addition, we modify the condition of triggering message exchange timeout to ensure the additional message handshakes do not incur protocol failure. Through this manual investigation, code modification and dynamic execution, we observe the messages introduced by this practice do not have negative impacts upon the protocol dialect. In this project, we therefore plan to take this practice as the third strategy for dialect generation. 
+
+With the four strageies in mind, we now describe how we intend to implement them to perform protocol dialect generation in an automated manner. As is described and showcased above, a protocol dialect is typically dependent upon finite state machines, involving multiple communication parties. Therefore, we must have a mechanism to recover the protocol dialect specified in protocol implementation. Since the strategies for protocol dialect generation include state removal and addition, which introduces 
+
+
+\subsection{Proposed Techniques}
+
+With the aforementioned four strategies in mind, we now discuss how we intend to automate them to perform protocol dialect generation. As is mentioned above, the strategies identified for dialect generation involve code removal (\eg, tightening transition conditions) as well as code synthesis (\eg, introducing new transition states). Therefore, the following describes our technical approaches for each of these practices.
+
+\subsubsection{Research Task 4: Removing Code Fragment}
+
+In the context of protocol customization, it is generally challenging to achieve a clean code removal. Take the condition tightening strategy for example. As is illustrated in Figure~\ref{} and~\ref{}, we can easily pinpoint the code fragment corresponding to the removal condition. However, this is far from sufficient for clearly cutting off the code unnecessary for protocol dialects newly generated. As is mentioned in Section~\ref{}, a communication protocol typically involves multiple parties, and a software developer may implement a protocol across different code bases and even through multiple threads. To perform a clean code removal, we must design and develop a mechanism to link all the code fragments to the one directly presented under the removal condition.  
+
+In this project, we plan to enable this mechanism by recovering protocol dialects using the following approaches. To be more specific, we will first identify the finite state machines that involve communication dialects. Since a communication dialect involves message exchanging, we intend to achieve this by exmaining state machines tied to function calls responsible for message sending and receiving. Second, we will pair state machines tied to the same dialect. To accomplish this, we plan to examine the data structure tied to function calls. Here, our hypothesis is that, if sending and receiving function calls are all tied to the same data structure, the corresponding state machines are involved to the same dialect. In this project, we will validate this hypothesis and maybe adjust this technique by observing various protocol implementations. 
+
+After identifying and pairing state machines, we will then recover the sequence of the messages exchanged between the paired state machines. To do this, we plan to  perform value set analysis on the code base corresponding to each of the state machines. Similar to the technique proposed for refining a state machine in Section~\ref{}, we will conduct this analysis against the outgoing messages prior to its attachment to message sending, and then match that value set with transition conditions of the state machine present on the other side. 
+
+To illustrate this approach, we take ... for example. 
+
+
+With protocol dialect restored, it is not difficult to notice that one could easily pinpoint the messages exchanged between each other which can be further used for tracking down the code fragements pertaining to that of removal. For example, by tightening the condition on transition from state \texttt{S\_PRE\_START} to \texttt{S\_START} illustrated in Figure~\ref{}, we can use the dialect to pinpoint the call to that function responsible for sending \texttt{P\_ACK}. On the code base running on the client side, we can then perform backward taint and identify the code fragements relevant to message \texttt{P\_ACK} holding the removed condition. 
+
+
+\subsubsection{Research Task 5: Synthesizing Code Fragment}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,88 @@
+\section{Introduction} 
+\label{sec:intro}
+
+% Background
+
+To facilitate communication with external entities and coordination with
+internal operations, private networks (\eg, data centers and industrial control
+networks) run a wide range of conventional protocols (\eg, Secure Socket Layer
+\texttt{SSL}~\citep{tls-wiki} and Lightweight Directory Access Protocol 
+\texttt{LDAP}~\citep{LDAP}). 
+As a result, they are typically vulnerable to not only the security loopholes
+residing in the protocol but also the DDoS attackes resulting from protocol
+abuses~\citep{LDAP-abuse1,LDAP-abuse2,NTP-abuse}.
+
+To safeguard such private networks, network administrators typically adopt
+firewalls~\citep{firewall} to detect intruders. 
+However, they provide only limited security
+guarantee to the daily operations in private networks~\citep{firewall-limitation}. 
+On the one hand, this is
+because private networks use public protocols both internally and externally,
+and it is sometimes difficult for firewalls to characterize the abnormal
+behaviors of public protocols. On the other hand, this is due to the fact that
+firewalls are typically ineffective when the attack is launched internally.
+
+From the perspective of network defenses, we believe the best practice for
+addesssing this issue is to customize protocols so that they can be used for
+internal and external communications differently. By customizing the dialog of
+\texttt{LDAP} protocol and using it only for internal communications or
+operations, for example, we could augment a private network with the ability to
+drop off the internal packets different from the customization, making the
+network naturally resistant to the DDoS reflection attack resulting from the
+abuse of conventional \texttt{LDAP}. However, protocol customization could be
+extrememely difficult and time-consuming. Given a complicated communication
+protocol, it generally requires a software developer putting a large amount of
+manual efforts to ensure his customization does not introduce logic
+incorrectness nor runtime failures.
+
+% Our research
+
+Inspired by this, we propose a protocol customization techniques to diversify
+protocols commonly adopted in private networks. More specifically, we plan to
+design and develop a full stack of technical approaches that could automate
+protocol modification and thus generate various dialogs for a target protocol.
+Since a network protocol typically can be modeled as a set of finite state
+machines involved in communication, technically speaking, we will first develop
+an effective mechanism to identify the implemenation pertaining to the state
+machines responsible for message exchanging. Then, we will utilize and design
+static program analysis techniques to analyze protocol implementations,  extract
+state machines and fully restore the communication dialogs they involved.
+
+Since the ultimate goal of this research project is to generate various protocol
+dialogs, we will further explore various approaches to mutate a communication
+dialog and identify those mutation strategies that do not jeoparidize the
+validity of a target protocol. We intend to implement the strategies  identified
+through an automated tool. Thus, we will also design and develop various program
+synthesis techniques. To be more specific, we will research how to utilize
+various program analysis techniques to perform code removal as well as code
+generation. In the rest of the proposal, we will mainly descirbe how we plan to
+design and develop these technical mechanisms, and discuss the technical
+challenges we have to address. In addition, we introduce the research works that
+we have already conducted.
+
+
+
+
+
+
+% Private network always becomes the target of an attack, which extrernal
+% intruders probe the networks and attempts to exploit or conduct Dos. To
+% address this problem, traditional solution rely upon firewall to detect
+% intruder. While it is effective, it does not guarantte to block external
+% intrusion because the limitation.  Network intrusion largely rely upon the
+% signatures. But some attack does not have signatures. Therefore, it sometimes
+% fails to flag a intrusion or mistakenly tag a legit connect as malicious.
+
+% To address this issue, we believe one solution to safegaurd private network is
+% to use private protocol because (1) identifying intrusion detection in a
+% private network without firewall (2) could potentially reduce the code bases
+% -- tightening constraint -- making software resistant to known vulnerabilities
+% (3) could reduce the network overhead -- merging network traffic. However,
+% customizing a protocol to a private dialog needs a lot of manual efforts and a
+% large amount of expertises. To make it worse, it is difficult to ensure the
+% customized protocol is still valid.
+
+
+
+
+
